@@ -41,6 +41,34 @@ public class IntegrationTest {
         account2.setCode(2);
     }
 
+    private static Account[] randomAccounts(int num) {
+
+        var accounts = new Account[num];
+
+        for (int i = 0; i < accounts.length; i++) {
+            var account = new Account();
+            account.setId(UUID.randomUUID());
+            account.setUserData(UUID.randomUUID());
+            account.setLedger(720);
+            account.setCode(1);
+
+            accounts[i] = account;
+        }
+
+        return accounts;
+    }
+
+    private static UUID[] accountsToUuids(Account[] accounts) {
+
+        var uuids = new UUID[accounts.length];
+
+        for (int i = 0; i < accounts.length; i++) {
+            uuids[i] = accounts[i].getId();
+        }
+
+        return uuids;
+    }
+
     @Test(expected = NullPointerException.class)
     public void testConstructorNullReplicaAddresses() throws Throwable {
 
@@ -124,14 +152,21 @@ public class IntegrationTest {
         try (var server = new Server()) {
             try (var client = new Client(0, new String[] {Server.TB_PORT})) {
 
-                var errors = client.createAccounts(new Account[] {account1, account2});
-                assertTrue(errors.length == 0);
+                final int numTries = 10;
+                final int numAccounts = 1;
 
-                var lookupAccounts =
-                        client.lookupAccounts(new UUID[] {account1.getId(), account2.getId()});
-                assertAccounts(account1, lookupAccounts[0]);
-                assertAccounts(account2, lookupAccounts[1]);
+                for (int onTry = 0; onTry < numTries; onTry++) {
+                    final var accounts = randomAccounts(numAccounts);
+                    final var ids = accountsToUuids(accounts);
 
+                    final var errors = client.createAccounts(accounts);
+                    assertTrue(errors.length == 0);
+
+                    final var lookupAccounts = client.lookupAccounts(ids);
+                    for (int i = 0; i < accounts.length; i++) {
+                        assertAccounts(accounts[i], lookupAccounts[i]);
+                    }
+                }
             } catch (Throwable any) {
                 throw any;
             }
