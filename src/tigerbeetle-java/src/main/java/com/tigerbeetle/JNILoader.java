@@ -18,7 +18,7 @@ final class JNILoader {
             String osName = System.getProperty("os.name").toLowerCase();
             if (osName.startsWith("win")) {
                 return OS.win;
-            } else if (osName.startsWith("macos") || osName.startsWith("osx")
+            } else if (osName.startsWith("mac") || osName.startsWith("darwin")) {
                     || osName.startsWith("darwin") || osName.equals("mac os x")) {
                 return OS.macos;
             } else if (osName.startsWith("linux")) {
